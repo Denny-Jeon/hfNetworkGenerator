@@ -1,15 +1,8 @@
-// import Os from "os";
-// import { resolve, join } from "path";
-// import Logger from "./logger";
-// import * as Conf from "./conf";
-// import ConfigTxYaml from "./configtxyaml";
-
 const Os = require("os");
 const { resolve, join } = require("path");
 const Logger = require("./logger");
 const Conf = require("./conf");
 const ConfigTxYaml = require("./configtxyaml");
-
 
 module.exports = class NetworkCLI {
     // constructor() { }

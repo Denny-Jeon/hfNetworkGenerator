@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-// import Program from "commander";
-// import NetworkCLI from "./networkCLI";
-// import Logger from "./logger";
-
 const Program = require("commander");
 const NetworkCLI = require("./networkCLI");
 const Logger = require("./logger");
@@ -29,25 +25,9 @@ const tasks = {
 
         return cli;
     },
-    async cleanNetwork(rmi) {
-        // return await Cli.cleanNetwork(rmi);
+    async removerNetowrk() {
+        return null;
     },
-    // async installChaincode(chaincode, language: string, channel?: string,
-    //     version?: string, params?: string, path?: string, ccPath?: string,
-    //     colConfig?: string, inside?: boolean, debug?: boolean) {
-    //     return await CLI.installChaincode(chaincode, language, channel, version,
-    //         params, path, ccPath, colConfig, inside, debug);
-    // },
-    // async upgradeChaincode(chaincode: string, language: string, channel?: string,
-    //     version?: string, params?: string, path?: string, ccPath?: string, colConfig?: string, inside?: boolean) {
-    //     return await CLI.upgradeChaincode(chaincode, language, channel,
-    //         version, params, path, ccPath, colConfig, inside);
-    // },
-    // async invokeChaincode(chaincode: string, fn: string, channel?: string, path?: string,
-    //     user?: string, organization?: string, inside?: boolean, transientData?: string, ...args: any[]) {
-    //     return await CLI.invokeChaincode(chaincode, fn, channel, path, user, organization,
-    //         inside, transientData, ...args);
-    // },
 };
 
 Logger.debug("start");
@@ -60,7 +40,6 @@ Program
     .option("-p, --peers <peers>", "Peers per organization")
     .option("-P, --path <path>", "Path to deploy the network")
     .option("-i, --inside", "Optimized for running inside the docker compose network")
-    // .option('-p, --peers <peers>', 'Peers per organization')
     .action(async (cmd) => {
         if (cmd) {
             await tasks.createNetwork({

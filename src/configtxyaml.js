@@ -1,5 +1,3 @@
-// import Logger from "./logger";
-// import * as Conf from "./conf";
 const Logger = require("./logger");
 const Conf = require("./conf");
 

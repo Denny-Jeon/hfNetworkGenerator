@@ -1,4 +1,3 @@
-
 module.exports = {
     HyperledgerFabricNetworkRoot: "./hf-network",
     FABRIC_VERSION: "1.4.1",
