@@ -2,12 +2,13 @@ const Os = require("os");
 const { resolve, join } = require("path");
 const Logger = require("./logger");
 const Conf = require("./conf");
+const NetworkFolder = require("./networkfolder");
 const ConfigTxYaml = require("./configtxyaml");
-const CryptoConfig = require("./cryptoconfig");
+const CryptoConfigYaml = require("./cryptoconfigyaml");
 const DockerComposer = require("./dockercomposer");
 const CryptoShGenerator = require("./cryptoshgenerator");
 const ChannelArtifactsShGenerator = require("./channelartifactsshgenerator");
-
+const NetworkRestartShGenerator = require("./networkrestartshgenerator");
 
 module.exports = class NetworkCLI {
     // constructor() { }
@@ -31,31 +32,45 @@ module.exports = class NetworkCLI {
         try {
             this.params.path = this.params.path
                 ? resolve(Os.homedir(), this.params.path)
-                : join(Os.homedir(), Conf.FABRIC_NETWORK_ROOT);
+                : join(Os.homedir(), Conf.PROJECT_ROOT);
 
             await this.makeNetworkConfig();
+
+            const networkFolder = new NetworkFolder({ params: this.params, network: this.network });
+            await networkFolder.generate();
 
             // create configtx
             const configTxYaml = new ConfigTxYaml({ params: this.params, network: this.network });
             configTxYaml.print();
+            configTxYaml.save();
 
             // create crypto-config
-            const cryptoConfig = new CryptoConfig({ params: this.params, network: this.network });
+            const cryptoConfig = new CryptoConfigYaml({ params: this.params, network: this.network });
             cryptoConfig.print();
-
-            // create docker-composer
-            const dockerComposer = new DockerComposer({ params: this.params, network: this.network });
-            dockerComposer.build();
-            dockerComposer.print();
-
+            cryptoConfig.save();
 
             // create crypto-config.sh
             const cryptoShGenerator = new CryptoShGenerator({ params: this.params, network: this.network });
             cryptoShGenerator.print();
+            cryptoShGenerator.save();
+            await cryptoShGenerator.execute();
 
             // create channel-artifacts
             const channelArtifactsShGenerator = new ChannelArtifactsShGenerator({ params: this.params, network: this.network });
             channelArtifactsShGenerator.print();
+            channelArtifactsShGenerator.save();
+            await channelArtifactsShGenerator.execute();
+
+            // create docker-composer
+            const dockerComposer = new DockerComposer({ params: this.params, network: this.network });
+            await dockerComposer.build();
+            dockerComposer.print();
+            await dockerComposer.save();
+            process.exit();
+
+            // create network-restart
+            const networkRestartShGenerator = new NetworkRestartShGenerator({ params: this.params, network: this.network });
+            networkRestartShGenerator.print();
         } catch (e) {
             Logger.error(`initNetwork: ${e}`);
         }
@@ -88,6 +103,7 @@ module.exports = class NetworkCLI {
                         COUCHDB: (index += 1),
                     };
                 }
+
                 // eslint-disable-next-line no-multi-assign
                 port.CA = (index += 1);
                 this.network.ports[`${Conf.ORG_PREFIX}${i + 1}`] = port;

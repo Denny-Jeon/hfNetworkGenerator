@@ -1,8 +1,11 @@
 const Logger = require("./logger");
 const Conf = require("./conf");
+const FileWrapper = require("./filewrapper");
 
-module.exports = class CryptoConfig {
+module.exports = class CryptoConfigYaml extends FileWrapper {
     constructor({ params, network }) {
+        super(params.path, "/crypto-config.yaml");
+
         this.params = params;
         this.network = network;
 
@@ -85,12 +88,16 @@ PeerOrgs:
     Users:
       Count:  ${this.params.users}
 `).join("")}
-            `;
+`;
     }
 
 
     // eslint-enable
     print() {
         Logger.debug(this.content);
+    }
+
+    async save() {
+        return this.writeFile(this.content);
     }
 };

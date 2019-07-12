@@ -1,8 +1,11 @@
 const Logger = require("./logger");
 const Conf = require("./conf");
+const FileWrapper = require("./filewrapper");
 
-module.exports = class ConfigTxYaml {
+module.exports = class ConfigTxYaml extends FileWrapper {
     constructor({ params, network }) {
+        super(params.path, "configtx.yaml");
+
         this.params = params;
         this.network = network;
 
@@ -202,12 +205,16 @@ Profiles:
                 `).join("")}
             Capabilities:
                 <<: *ApplicationCapabilities
-            `;
+`;
     }
 
 
     // eslint-enable
     print() {
         Logger.debug(this.content);
+    }
+
+    async save() {
+        return this.writeFile(this.content);
     }
 };

@@ -1,9 +1,10 @@
-const fs = require("fs");
 const Logger = require("./logger");
 const Conf = require("./conf");
+const FileWrapper = require("./filewrapper");
 
-module.exports = class CryptoShGenerator {
+module.exports = class ChannelArtifactsShGenerator extends FileWrapper {
     constructor({ params, network }) {
+        super(params.path, "channel-artifacts.sh");
         this.params = params;
         this.network = network;
 
@@ -11,11 +12,11 @@ module.exports = class CryptoShGenerator {
         this.content = `
 #!/bin/bash
 set -e
-FABRIC_NETWORK_ROOT=${Conf.FABRIC_NETWORK_ROOT}
-FABRIC_BIN=$FABRIC_NETWORK_ROOT/fabric-binaries/${Conf.FABRIC_VERSION}/bin
-TARGET=$FABRIC_NETWORK_ROOT/channel-artifacts/OrgsOrdererGenesis
+PROJECT_ROOT=${this.params.path}
+FABRIC_BIN=${Conf.FABRIC_BIN_ROOT}/bin
+TARGET=$PROJECT_ROOT/channel-artifacts/OrgsOrdererGenesis
 
-export FABRIC_CFG_PATH=$FABRIC_NETWORK_ROOT
+export FABRIC_CFG_PATH=$PROJECT_ROOT
 
 function fail () {
     if [ "$?" -ne 0 ]; then
@@ -24,22 +25,43 @@ function fail () {
     fi
 }
 
-which $BIN/configtxgen
+which $FABRIC_BIN/configtxgen
 fail "cryptogen tool not found. exiting"
 
-mkdir $TARGET
+if [ ! -d "$TARGET" ]; then
+    mkdir $TARGET
+fi
 
-$BIN/configtxgen --profile OrgsOrdererGenesis -outputBLock $TARGET/genesis.block
+
+$FABRIC_BIN/configtxgen --profile OrgsOrdererGenesis -outputBlock $TARGET/genesis.block
 fail "Failed to generate orderer genesis block..."
 
 
+for CH in ${this.network.channels.map(x => `${x} `).join("")}
+do
+  # generate channel configuration transaction
+  $FABRIC_BIN/configtxgen -profile OrgsChannel -outputCreateChannelTx $TARGET/$CH.tx -channelID $CH
+  fail "Failed to generate $CH configuration transaction..."
 
-        `;
+  ${this.network.orgs.map(org => `
+  $FABRIC_BIN/configtxgen -profile OrgsChannel -outputAnchorPeersUpdate $TARGET/${org}Anchors.$CH.tx -channelID $CH -asOrg ${org}MSP
+  fail "Failed to generate $CH anchor peer update for ${org}..."
+  
+  `).join("")}
+
+done
+`;
     }
-
 
     // eslint-enable
     print() {
         Logger.debug(this.content);
+    }
+
+    async save() {
+        return this.writeFile(this.content, null, {
+            flag: "w+",
+            mode: "0755",
+        });
     }
 };
