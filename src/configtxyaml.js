@@ -49,8 +49,8 @@ Organizations:
                 Rule: "OR('${org}MSP.admin')"
 
         AnchorPeers:
-            - Host: peer0.${org}.${Conf.DOMAIN}
-            Port: 7051
+            - Host: ${Conf.PEER_PREFIX}0.${org}.${Conf.DOMAIN}
+              Port: ${this.network.ports[org][`${Conf.PEER_PREFIX}0`].ADDRESS}
 
     `).join("")}
 
