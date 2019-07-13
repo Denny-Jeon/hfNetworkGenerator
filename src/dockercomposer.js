@@ -107,6 +107,7 @@ services:
   ${this.network.orgs.map(org => `
   ca.${org}.${Conf.DOMAIN}:
     image: hyperledger/fabric-ca:${Conf.FABRIC_VERSION}
+    container_name: ca.${org}.${Conf.DOMAIN}
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca.${org}.${Conf.DOMAIN}
@@ -117,8 +118,7 @@ services:
       - "${this.network.ports[org].CA}:${this.network.ports[org].CA}"
     command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.${org}.${Conf.DOMAIN}-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/${this.privateKey[org]} -b ${Conf.CA_ADMIN_ID}:${Conf.CA_ADMIN_PASSWORD} -d'
     volumes:
-      - ${this.params.path}/crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/ca/:/etc/hyperledger/fabric-ca-server-config
-    container_name: ca.${org}.${Conf.DOMAIN}
+      - ${this.params.path}/crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/ca/:/etc/hyperledger/fabric-ca-server-config   
     networks:
       - hfn
   `).join("")}
@@ -142,6 +142,7 @@ services:
 
   ${peer}.${org}.${Conf.DOMAIN}:
     image: hyperledger/fabric-peer:${Conf.FABRIC_VERSION}
+    container_name: ${peer}.${org}.${Conf.DOMAIN}
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       # the following setting starts chaincode containers on the same
@@ -187,6 +188,8 @@ services:
       - ${this.network.ports[org][peer].ADDRESS}:${this.network.ports[org][peer].ADDRESS}
     depends_on:
       - couchdb-${peer}.${org}
+    networks:
+      - hfn
     `).join("")}
     `).join("")}
 `;

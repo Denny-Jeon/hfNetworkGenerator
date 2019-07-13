@@ -19,18 +19,32 @@ const tasks = {
                 path,
                 inside,
             });
+            await cli.initNetwork();
         } catch (e) {
             Logger.error(`createNetwork: ${e}`);
         }
 
         return cli;
     },
-    async removerNetowrk() {
-        return null;
+    async removeNetwork({
+        path = null, inside = false,
+    }) {
+        const cli = new NetworkCLI();
+
+        try {
+            await cli.init({
+                path,
+                inside,
+            });
+
+            cli.removeNetwork();
+        } catch (e) {
+            Logger.error(`removeNetwork: ${e}`);
+        }
+
+        return cli;
     },
 };
-
-Logger.debug("start");
 
 Program
     .command("new")
@@ -52,6 +66,21 @@ Program
             });
         } else {
             await tasks.createNetwork();
+        }
+    });
+
+Program
+    .command("clean")
+    .option("-P, --path <path>", "Path to deploy the network")
+    .option("-i, --inside", "Optimized for running inside the docker compose network")
+    .action(async (cmd) => {
+        if (cmd) {
+            await tasks.removeNetwork({
+                path: cmd.path,
+                inside: (!!cmd.inside),
+            });
+        } else {
+            await tasks.removeNetwork();
         }
     });
 

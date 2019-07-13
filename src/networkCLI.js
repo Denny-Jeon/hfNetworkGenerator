@@ -9,6 +9,7 @@ const DockerComposer = require("./dockercomposer");
 const CryptoShGenerator = require("./cryptoshgenerator");
 const ChannelArtifactsShGenerator = require("./channelartifactsshgenerator");
 const NetworkRestartShGenerator = require("./networkrestartshgenerator");
+const NetworkCleanShGenerator = require("./networkcleanshgenerator");
 
 module.exports = class NetworkCLI {
     // constructor() { }
@@ -24,8 +25,6 @@ module.exports = class NetworkCLI {
             path,
             inside,
         };
-
-        this.initNetwork();
     }
 
     async initNetwork() {
@@ -66,15 +65,38 @@ module.exports = class NetworkCLI {
             await dockerComposer.build();
             dockerComposer.print();
             await dockerComposer.save();
-            process.exit();
 
             // create network-restart
             const networkRestartShGenerator = new NetworkRestartShGenerator({ params: this.params, network: this.network });
             networkRestartShGenerator.print();
+            await networkRestartShGenerator.save();
+            await networkRestartShGenerator.execute();
+
+
+            // create network-restart
+            const networkCleanShGenerator = new NetworkCleanShGenerator({ params: this.params, network: this.network });
+            networkCleanShGenerator.print();
+            await networkCleanShGenerator.save();
         } catch (e) {
             Logger.error(`initNetwork: ${e}`);
         }
     }
+
+
+    async removeNetwork() {
+        try {
+            this.params.path = this.params.path
+                ? resolve(Os.homedir(), this.params.path)
+                : join(Os.homedir(), Conf.PROJECT_ROOT);
+
+            // create network-restart
+            const networkCleanShGenerator = new NetworkCleanShGenerator({ params: this.params, network: this.network });
+            await networkCleanShGenerator.execute();
+        } catch (e) {
+            Logger.error(`removeNetwork: ${e}`);
+        }
+    }
+
 
     async makeNetworkConfig() {
         try {

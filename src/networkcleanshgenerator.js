@@ -2,9 +2,9 @@ const Logger = require("./logger");
 const Conf = require("./conf");
 const FileWrapper = require("./filewrapper");
 
-module.exports = class NetworkRestartShGenerator extends FileWrapper {
+module.exports = class NetworkCleanShGenerator extends FileWrapper {
     constructor({ params, network }) {
-        super(params.path, "network-restart.sh");
+        super(params.path, "network-clean.sh");
         this.params = params;
         this.network = network;
 
@@ -12,16 +12,6 @@ module.exports = class NetworkRestartShGenerator extends FileWrapper {
         this.content = `
 #!/bin/bash
 set +e
-
-# clean
-ITEMS=$(docker ps -a | awk '$2~/hyperledger/ {print $1}') 
-
-if [ ! -z "$ITEMS" ]; then
-    docker stop $(docker ps -a | awk '$2~/hyperledger/ {print $1}') 
-    docker rm -f $(docker ps -a | awk '$2~/hyperledger/ {print $1}') $(docker ps -a | awk '{ print $1,$2 }' | grep dev-peer | awk '{print $1 }') || true
-    docker rmi -f $(docker images | grep dev-peer | awk '{print $3}') || true
-fi
-
 
 # start
 COMPOSER_PROJECT_NAME=${Conf.PROJECT_NETWORK_NAME}
@@ -38,10 +28,30 @@ function fail() {
     fi
 }
 
-docker-compose -f ${this.params.path}/docker-compose.yaml up -d
+function clearContainers() {
+    CONTAINER_IDS=$(docker ps -a | awk '($2 ~ /dev-peer.*.*/) {print $1}')
+    if [ -z "$CONTAINER_IDS" -o "$CONTAINER_IDS" == " " ]; then
+      echo "---- No containers available for deletion ----"
+    else
+      docker rm -f $CONTAINER_IDS
+    fi
+}
 
+function removeUnwantedImages() {
+DOCKER_IMAGE_IDS=$(docker images | awk '($1 ~ /dev-peer.*.*/) {print $3}')
+if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
+    echo "---- No images available for deletion ----"
+else
+    docker rmi -f $DOCKER_IMAGE_IDS
+fi
+}
 
-        `;
+docker-compose -f ${this.params.path}/docker-compose.yaml down --volumes --remove-orphans
+docker ps -a
+
+clearContainers
+removeUnwantedImages
+`;
     }
 
 

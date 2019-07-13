@@ -4,7 +4,7 @@ module.exports = {
     THIRDPARTY_VERSION: "0.4.15",
     PROJECT_NETWORK_NAME: "test",
 
-    FABRIC_BIN_ROOT: "/home/fabric/fabric-samples",
+    FABRIC_BIN_ROOT: "/home/futureds/dApp/fabric-samples",
 
     ORDERER_DOMAIN: "biz.com",
 
