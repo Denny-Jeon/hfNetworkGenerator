@@ -3,17 +3,6 @@ const Logger = require("./logger");
 const Conf = require("./conf");
 const FileWrapper = require("./filewrapper");
 
-// const readdirAsync = (path, opts = "utf8") => new Promise((resolve, reject) => {
-//     Logger.debug(path);
-//     fs.readdir(path, opts, (err, data) => {
-//         Logger.debug(err);
-//         Logger.debug(data);
-//         if (err) reject(err);
-//         else resolve(data);
-//     });
-// });
-
-
 module.exports = class DockerComposer extends FileWrapper {
     constructor({ params, network }) {
         super(params.path, "docker-compose.yaml");
@@ -62,7 +51,7 @@ volumes:
   `).join("")}
   ${this.network.orgs.map(org => `
   ${this.network.peers.map(peer => `
-  couchdb-${peer}.${org}:
+  # couchdb-${peer}.${org}:
   ${peer}.${org}.${Conf.DOMAIN}:
   `).join("")}
   `).join("")}
@@ -95,9 +84,9 @@ services:
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     command: orderer
     volumes:
-        - ${this.params.path}/channel-artifacts/OrgsOrdererGenesis/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-        - ${this.params.path}/crypto-config/ordererOrganizations/${Conf.ORDERER_DOMAIN}/orderers/orderer.${Conf.ORDERER_DOMAIN}/msp:/var/hyperledger/orderer/msp
-        - ${this.params.path}/crypto-config/ordererOrganizations/${Conf.ORDERER_DOMAIN}/orderers/orderer.${Conf.ORDERER_DOMAIN}/tls/:/var/hyperledger/orderer/tls
+        - ./channel-artifacts/OrgsOrdererGenesis/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ./crypto-config/ordererOrganizations/${Conf.ORDERER_DOMAIN}/orderers/orderer.${Conf.ORDERER_DOMAIN}/msp:/var/hyperledger/orderer/msp
+        - ./crypto-config/ordererOrganizations/${Conf.ORDERER_DOMAIN}/orderers/orderer.${Conf.ORDERER_DOMAIN}/tls/:/var/hyperledger/orderer/tls
         - orderer.${Conf.ORDERER_DOMAIN}:/var/hyperledger/production/orderer
     ports:
       - 7050:7050
@@ -118,7 +107,7 @@ services:
       - "${this.network.ports[org].CA}:${this.network.ports[org].CA}"
     command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.${org}.${Conf.DOMAIN}-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/${this.privateKey[org]} -b ${Conf.CA_ADMIN_ID}:${Conf.CA_ADMIN_PASSWORD} -d'
     volumes:
-      - ${this.params.path}/crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/ca/:/etc/hyperledger/fabric-ca-server-config   
+      - ./crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/ca/:/etc/hyperledger/fabric-ca-server-config   
     networks:
       - hfn
   `).join("")}
@@ -136,7 +125,7 @@ services:
     # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
     # for example map it to utilize Fauxton User Interface in dev environments.
     ports:
-      - "${this.network.ports[org][peer].COUCHDB}:${this.network.ports[org][peer].COUCHDB}"
+      - "${this.network.ports[org][peer].COUCHDB}:5984"
     networks:
       - hfn
 
@@ -171,7 +160,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peer}.${org}.${Conf.DOMAIN}:${this.network.ports[org][peer].ADDRESS}
       - CORE_PEER_LOCALMSPID=${org}MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-${peer}.${org}:${this.network.ports[org][peer].COUCHDB}
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-${peer}.${org}:5984
       # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
       # provide the credentials for ledger to connect to CouchDB.  The username and password must
       # match the username and password set for the associated CouchDB.
@@ -181,8 +170,8 @@ services:
     command: peer node start
     volumes:
       - /var/run/:/host/var/run/
-      - ${this.params.path}/crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/peers/${peer}.${org}.${Conf.DOMAIN}/msp:/etc/hyperledger/fabric/msp
-      - ${this.params.path}/crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/peers/${peer}.${org}.${Conf.DOMAIN}/tls:/etc/hyperledger/fabric/tls
+      - ./crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/peers/${peer}.${org}.${Conf.DOMAIN}/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/peers/${peer}.${org}.${Conf.DOMAIN}/tls:/etc/hyperledger/fabric/tls
       - ${peer}.${org}.${Conf.DOMAIN}:/var/hyperledger/production
     ports:
       - ${this.network.ports[org][peer].ADDRESS}:${this.network.ports[org][peer].ADDRESS}
@@ -191,9 +180,10 @@ services:
     networks:
       - hfn
     `).join("")}
+    `).join("")}
 
-  ${org}.cli:
-    container_name: ${org}.cli
+  cli:
+    container_name: cli
     image: hyperledger/fabric-tools:${Conf.FABRIC_VERSION}
     tty: true
     stdin_open: true
@@ -202,29 +192,28 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=DEBUG
       - FABRIC_LOGGING_SPEC=INFO
-      - CORE_PEER_ID=${org}.cli
-      - CORE_PEER_ADDRESS=peer0.${org}.${Conf.DOMAIN}:${this.network.ports[org].peer0.ADDRESS}
-      - CORE_PEER_LOCALMSPID=${org}MSP
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.${Conf.ORG_PREFIX}1.${Conf.DOMAIN}:${this.network.ports[`${Conf.ORG_PREFIX}1`].peer0.ADDRESS}
+      - CORE_PEER_LOCALMSPID=${Conf.ORG_PREFIX}1MSP
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/peers/peer0.${org}.${Conf.DOMAIN}/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/peers/peer0.${org}.${Conf.DOMAIN}/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/peers/peer0.${org}.${Conf.DOMAIN}/tls/ca.crt
-      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/users/Admin@${org}.${Conf.DOMAIN}/msp
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/peers/peer0.${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/peers/peer0.${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/peers/peer0.${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/users/Admin@${Conf.ORG_PREFIX}1.${Conf.DOMAIN}/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
     volumes:
         - /var/run/:/host/var/run/
-        - ${this.params.path}/chaincode/:/opt/gopath/src/github.com/chaincode
-        - ${this.params.path}/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
-        - ${this.params.path}/scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
-        - ${this.params.path}/channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+        - ./chaincode/:/opt/gopath/src/github.com/chaincode
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
     depends_on:
-      - ca.${org}.${Conf.DOMAIN}
+      - ca.${Conf.ORG_PREFIX}1.${Conf.DOMAIN}
       - orderer.${Conf.ORDERER_DOMAIN}
-      - peer0.${org}.${Conf.DOMAIN}
+      - peer0.${Conf.ORG_PREFIX}1.${Conf.DOMAIN}
     networks:
       - hfn  
-    `).join("")}
 `;
     }
 

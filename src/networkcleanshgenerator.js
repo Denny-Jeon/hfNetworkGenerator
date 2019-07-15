@@ -14,7 +14,6 @@ module.exports = class NetworkCleanShGenerator extends FileWrapper {
 set +e
 
 # start
-COMPOSER_PROJECT_NAME=${Conf.PROJECT_NETWORK_NAME}
 FABRIC_VERSION=${Conf.FABRIC_VERSION}
 THIRDPARTY_VERSION=${Conf.THIRDPARTY_VERSION}
 PROJECT_ROOT=${this.params.path}

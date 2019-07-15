@@ -11,6 +11,9 @@ const ChannelArtifactsShGenerator = require("./channelartifactsshgenerator");
 const NetworkRestartShGenerator = require("./networkrestartshgenerator");
 const NetworkCleanShGenerator = require("./networkcleanshgenerator");
 const CreateChannelShGenerator = require("./createchannelshgenerator");
+const JoinChannelShGenerator = require("./joinchannelshgenerator");
+const CreateCliShGenerator = require("./createclishgenerator");
+const CreateConnectionYamlGenerator = require("./createconnectionyamlgenerator");
 
 module.exports = class NetworkCLI {
     // constructor() { }
@@ -39,12 +42,12 @@ module.exports = class NetworkCLI {
             const networkFolder = new NetworkFolder({ params: this.params, network: this.network });
             await networkFolder.generate();
 
-            // create configtx
+            // create configtx.yaml
             const configTxYaml = new ConfigTxYaml({ params: this.params, network: this.network });
             configTxYaml.print();
             configTxYaml.save();
 
-            // create crypto-config
+            // create crypto-config.yaml
             const cryptoConfig = new CryptoConfigYaml({ params: this.params, network: this.network });
             cryptoConfig.print();
             cryptoConfig.save();
@@ -55,33 +58,51 @@ module.exports = class NetworkCLI {
             cryptoShGenerator.save();
             await cryptoShGenerator.execute();
 
-            // create channel-artifacts
+            // create channel-artifacts.sh
             const channelArtifactsShGenerator = new ChannelArtifactsShGenerator({ params: this.params, network: this.network });
             channelArtifactsShGenerator.print();
             channelArtifactsShGenerator.save();
             await channelArtifactsShGenerator.execute();
 
-            // create docker-composer
+            // create docker-composer.yaml
             const dockerComposer = new DockerComposer({ params: this.params, network: this.network });
             await dockerComposer.build();
             dockerComposer.print();
             await dockerComposer.save();
 
-            // create network-restart
+            // create network-restart.sh
             const networkRestartShGenerator = new NetworkRestartShGenerator({ params: this.params, network: this.network });
             networkRestartShGenerator.print();
             await networkRestartShGenerator.save();
             await networkRestartShGenerator.execute();
 
-            // create network-restart
+            // create network-clean.sh
             const networkCleanShGenerator = new NetworkCleanShGenerator({ params: this.params, network: this.network });
             networkCleanShGenerator.print();
             await networkCleanShGenerator.save();
 
-            // create network-restart
+            // create scripts/create-channels.sh
             const createChannelShGenerator = new CreateChannelShGenerator({ params: this.params, network: this.network });
             createChannelShGenerator.print();
             await createChannelShGenerator.save();
+
+
+            // create scripts/create-channels.sh
+            const joinChannelShGenerator = new JoinChannelShGenerator({ params: this.params, network: this.network });
+            joinChannelShGenerator.print();
+            await joinChannelShGenerator.save();
+
+            // create scripts/cli.sh
+            const createCliShGenerator = new CreateCliShGenerator({ params: this.params, network: this.network });
+            createCliShGenerator.print();
+            await createCliShGenerator.save();
+            await createCliShGenerator.execute();
+
+            // create connections/org1_connection.yaml, connections/org1_connection.json connections/org1_AdminCard.sh
+            const createConnectionYamlGenerator = new CreateConnectionYamlGenerator({ params: this.params, network: this.network });
+            createConnectionYamlGenerator.print();
+            await createConnectionYamlGenerator.save();
+            await createConnectionYamlGenerator.executeAdminCard();
         } catch (e) {
             Logger.error(`initNetwork: ${e}`);
         }

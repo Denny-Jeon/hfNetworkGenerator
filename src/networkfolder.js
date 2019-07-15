@@ -1,5 +1,3 @@
-// const Logger = require("./logger");
-// const Conf = require("./conf");
 const FileWrapper = require("./filewrapper");
 
 module.exports = class NetworkFolder extends FileWrapper {
@@ -16,9 +14,12 @@ module.exports = class NetworkFolder extends FileWrapper {
         await this.clearFolder(`${this.params.path}/crypto-config`);
         await this.clearFolder(`${this.params.path}/channel-artifacts`);
         await this.clearFolder(`${this.params.path}/scripts`);
+        await this.clearFolder(`${this.params.path}/connections`);
+
         await this.createFolder(`${this.params.path}/crypto-config`);
         await this.createFolder(`${this.params.path}/channel-artifacts`);
         await this.createFolder(`${this.params.path}/scripts`);
-        await this.clearFolder(`${this.params.path}/chaincode`);
+        await this.createFolder(`${this.params.path}/connections`);
+        await this.createFolder(`${this.params.path}/chaincode`);
     }
 };
