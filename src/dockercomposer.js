@@ -191,6 +191,39 @@ services:
     networks:
       - hfn
     `).join("")}
+
+  ${org}.cli:
+    container_name: ${org}.cli
+    image: hyperledger/fabric-tools:${Conf.FABRIC_VERSION}
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=${org}.cli
+      - CORE_PEER_ADDRESS=peer0.${org}.${Conf.DOMAIN}:${this.network.ports[org].peer0.ADDRESS}
+      - CORE_PEER_LOCALMSPID=${org}MSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/peers/peer0.${org}.${Conf.DOMAIN}/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/peers/peer0.${org}.${Conf.DOMAIN}/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/peers/peer0.${org}.${Conf.DOMAIN}/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${org}.${Conf.DOMAIN}/users/Admin@${org}.${Conf.DOMAIN}/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${this.params.path}/chaincode/:/opt/gopath/src/github.com/chaincode
+        - ${this.params.path}/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ${this.params.path}/scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ${this.params.path}/channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - ca.${org}.${Conf.DOMAIN}
+      - orderer.${Conf.ORDERER_DOMAIN}
+      - peer0.${org}.${Conf.DOMAIN}
+    networks:
+      - hfn  
     `).join("")}
 `;
     }

@@ -10,6 +10,7 @@ const CryptoShGenerator = require("./cryptoshgenerator");
 const ChannelArtifactsShGenerator = require("./channelartifactsshgenerator");
 const NetworkRestartShGenerator = require("./networkrestartshgenerator");
 const NetworkCleanShGenerator = require("./networkcleanshgenerator");
+const CreateChannelShGenerator = require("./createchannelshgenerator");
 
 module.exports = class NetworkCLI {
     // constructor() { }
@@ -72,11 +73,15 @@ module.exports = class NetworkCLI {
             await networkRestartShGenerator.save();
             await networkRestartShGenerator.execute();
 
-
             // create network-restart
             const networkCleanShGenerator = new NetworkCleanShGenerator({ params: this.params, network: this.network });
             networkCleanShGenerator.print();
             await networkCleanShGenerator.save();
+
+            // create network-restart
+            const createChannelShGenerator = new CreateChannelShGenerator({ params: this.params, network: this.network });
+            createChannelShGenerator.print();
+            await createChannelShGenerator.save();
         } catch (e) {
             Logger.error(`initNetwork: ${e}`);
         }

@@ -39,9 +39,7 @@ function fail() {
 }
 
 docker-compose -f ${this.params.path}/docker-compose.yaml up -d
-
-
-        `;
+`;
     }
 
 
