@@ -4,7 +4,7 @@ const FileWrapper = require("./filewrapper");
 
 module.exports = class JoinChannelShGenerator extends FileWrapper {
     constructor({ params, network }) {
-        super(params.path, "scripts/join-channels.sh");
+        super(params.path, "scripts/update-anchor-peers.sh");
         this.params = params;
         this.network = network;
 
@@ -22,8 +22,6 @@ export IMAGETAG="latest"
 export TIMEOUT=10
 export DELAY=3
 
-COUNTER=1
-MAX_RETRY=3
 
 function fail() {
     if [ "$?" -ne 0 ]; then
@@ -60,7 +58,8 @@ setGlobals() {
     esac
 }
 
-joinChannelWithRetry() {
+
+updateAnchorPeers() {
     PEER=$1
     ORG=$2  
     setGlobals $PEER $ORG
@@ -69,24 +68,17 @@ joinChannelWithRetry() {
 
     set -x
     ${this.network.channels.map(CH => `
-    peer channel join -b ${CH}.block >&log.txt
+    peer channel update -o orderer.${Conf.ORDERER_DOMAIN}:7050 -c ${CH} -f ./channel-artifacts/OrgsOrdererGenesis/${CH}Anchors.tx --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
+    res=$?
     res=$?
     set +x
     cat log.txt
-    if [ $res -ne 0 -a $COUNTER -lt $MAX_RETRY ]; then
-        COUNTER=$(expr $COUNTER + 1)
-        echo "$PEER.$ORG failed to join the channel, Retry after $DELAY seconds"
-        sleep $DELAY
-        joinChannelWithRetry $PEER $ORG
-    else
-        COUNTER=1
-    fi
 
-    fail "join channel ${CH} failed"
+    fail "update AnchorPeers channel ${CH} failed"
     `).join("")}   
 }
 
-joinChannelWithRetry $1 $2
+updateAnchorPeers $1 $2
 `;
     }
 

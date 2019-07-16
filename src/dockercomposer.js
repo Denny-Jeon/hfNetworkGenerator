@@ -42,7 +42,7 @@ module.exports = class DockerComposer extends FileWrapper {
 # SPDX-License-Identifier: Apache-2.0
 #
 
-version: '2'
+version: '3.5'
 
 volumes:
   orderer.${Conf.ORDERER_DOMAIN}:
@@ -58,6 +58,8 @@ volumes:
 
 networks:
   hfn:
+    # must space
+    name: ${Conf.PROJECT_NETWORK_NAME}_hfn
 
 services:
   # orderer
@@ -104,7 +106,7 @@ services:
       - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.${org}.${Conf.DOMAIN}-cert.pem
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/${this.privateKey[org]}
     ports:
-      - "${this.network.ports[org].CA}:${this.network.ports[org].CA}"
+      - "${this.network.ports[org].CA}:7054"
     command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.${org}.${Conf.DOMAIN}-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/${this.privateKey[org]} -b ${Conf.CA_ADMIN_ID}:${Conf.CA_ADMIN_PASSWORD} -d'
     volumes:
       - ./crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/ca/:/etc/hyperledger/fabric-ca-server-config   
@@ -147,10 +149,11 @@ services:
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
-      - CORE_PEER_ID= ${peer}.${org}.${Conf.DOMAIN}
-      - CORE_PEER_ADDRESS= ${peer}.${org}.${Conf.DOMAIN}:${this.network.ports[org][peer].ADDRESS}
+      # must not space
+      - CORE_PEER_ID=${peer}.${org}.${Conf.DOMAIN}
+      - CORE_PEER_ADDRESS=${peer}.${org}.${Conf.DOMAIN}:${this.network.ports[org][peer].ADDRESS}
       - CORE_PEER_LISTENADDRESS=0.0.0.0:${this.network.ports[org][peer].ADDRESS}
-      - CORE_PEER_CHAINCODEADDRESS= ${peer}.${org}.${Conf.DOMAIN}:${this.network.ports[org][peer].CHAINCODEADDRESS}
+      - CORE_PEER_CHAINCODEADDRESS=${peer}.${org}.${Conf.DOMAIN}:${this.network.ports[org][peer].CHAINCODEADDRESS}
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:${this.network.ports[org][peer].CHAINCODEADDRESS}
       ${this.network.peers.length <= 1 ? "# - CORE_PEER_GOSSIP_BOOTSTRAP="
         : `- CORE_PEER_GOSSIP_BOOTSTRAP=${peer === `${Conf.PEER_PREFIX}0`

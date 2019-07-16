@@ -12,8 +12,13 @@ const NetworkRestartShGenerator = require("./networkrestartshgenerator");
 const NetworkCleanShGenerator = require("./networkcleanshgenerator");
 const CreateChannelShGenerator = require("./createchannelshgenerator");
 const JoinChannelShGenerator = require("./joinchannelshgenerator");
+const UpdateAnchorShGenerator = require("./updateanchorshgenerator");
 const CreateCliShGenerator = require("./createclishgenerator");
 const CreateConnectionYamlGenerator = require("./createconnectionyamlgenerator");
+const InstallChaincodeShGenerator = require("./installchaincodeshgenerator");
+const ChaincodeCliShGenerator = require("./chaincodeclishgenerator");
+const UpgradeChaincodeShGenerator = require("./upgradechaincodeshgenerator");
+const SetEnvShGenerator = require("./setenvshgenerator");
 
 module.exports = class NetworkCLI {
     // constructor() { }
@@ -86,11 +91,15 @@ module.exports = class NetworkCLI {
             createChannelShGenerator.print();
             await createChannelShGenerator.save();
 
-
-            // create scripts/create-channels.sh
+            // create scripts/join-channels.sh
             const joinChannelShGenerator = new JoinChannelShGenerator({ params: this.params, network: this.network });
             joinChannelShGenerator.print();
             await joinChannelShGenerator.save();
+
+            // create scripts/update-anchor-peers.sh
+            const updateAnchorShGenerator = new UpdateAnchorShGenerator({ params: this.params, network: this.network });
+            updateAnchorShGenerator.print();
+            await updateAnchorShGenerator.save();
 
             // create scripts/cli.sh
             const createCliShGenerator = new CreateCliShGenerator({ params: this.params, network: this.network });
@@ -103,6 +112,22 @@ module.exports = class NetworkCLI {
             createConnectionYamlGenerator.print();
             await createConnectionYamlGenerator.save();
             await createConnectionYamlGenerator.executeAdminCard();
+
+
+            // create scripts/install-chaincode.sh
+            const installChaincodeShGenerator = new InstallChaincodeShGenerator({ params: this.params, network: this.network });
+            installChaincodeShGenerator.print();
+            await installChaincodeShGenerator.save();
+
+            // create scripts/install-chaincode.sh
+            const upgradeChaincodeShGenerator = new UpgradeChaincodeShGenerator({ params: this.params, network: this.network });
+            upgradeChaincodeShGenerator.print();
+            await upgradeChaincodeShGenerator.save();
+
+            // create scripts/set-env.sh
+            const setEnvShGenerator = new SetEnvShGenerator({ params: this.params, network: this.network });
+            setEnvShGenerator.print();
+            await setEnvShGenerator.save();
         } catch (e) {
             Logger.error(`initNetwork: ${e}`);
         }
@@ -170,6 +195,87 @@ module.exports = class NetworkCLI {
             }
         } catch (e) {
             Logger.error(`makeNetworkConfig: ${e}`);
+        }
+    }
+
+
+    async installChaincode({
+        org,
+        peer,
+        channel,
+        name,
+        version,
+        language,
+        ctor,
+        policy,
+        path,
+        instantiate,
+    }) {
+        try {
+            this.params = {
+                org,
+                peer,
+                channel,
+                name,
+                version,
+                language,
+                ctor,
+                policy,
+                path,
+                instantiate,
+            };
+
+            this.params.path = this.params.path
+                ? resolve(Os.homedir(), this.params.path)
+                : join(Os.homedir(), Conf.PROJECT_ROOT);
+
+            this.params.mode = "install";
+
+            // create network-restart
+            const chaincodeCliShGenerator = new ChaincodeCliShGenerator({ params: this.params });
+            await chaincodeCliShGenerator.save();
+            await chaincodeCliShGenerator.execute();
+        } catch (e) {
+            Logger.error(`installChaincode: ${e}`);
+        }
+    }
+
+    async upgradeChaincode({
+        org,
+        peer,
+        channel,
+        name,
+        version,
+        language,
+        ctor,
+        policy,
+        path,
+    }) {
+        try {
+            this.params = {
+                org,
+                peer,
+                channel,
+                name,
+                version,
+                language,
+                ctor,
+                policy,
+                path,
+            };
+
+            this.params.path = this.params.path
+                ? resolve(Os.homedir(), this.params.path)
+                : join(Os.homedir(), Conf.PROJECT_ROOT);
+
+            this.params.mode = "upgrade";
+
+            // create network-restart
+            const chaincodeCliShGenerator = new ChaincodeCliShGenerator({ params: this.params });
+            await chaincodeCliShGenerator.save();
+            await chaincodeCliShGenerator.execute();
+        } catch (e) {
+            Logger.error(`installChaincode: ${e}`);
         }
     }
 };

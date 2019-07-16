@@ -1,6 +1,7 @@
 const FsExtra = require("fs-extra");
 const Fs = require("fs");
 const ShellJs = require("shelljs");
+const AppRootPath = require("app-root-path");
 const Logger = require("./logger");
 
 module.exports = class FileWrapper {
@@ -46,5 +47,9 @@ module.exports = class FileWrapper {
         }
 
         return Fs.writeFileSync(file, data, option);
+    }
+
+    copyExampleChaincode(src = `${AppRootPath}/src/examples/`) {
+        return FsExtra.copySync(src, `${this.path}/chaincode/`);
     }
 };

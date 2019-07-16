@@ -42,6 +42,9 @@ sleep $DELAY
     `).join("")}
 `).join("")}
 
+${this.network.orgs.map(org => `
+docker exec --interactive cli /bin/bash -c 'scripts/update-anchor-peers.sh ${this.network.peers[0]} ${org}'
+`).join("")}
 `;
     }
 

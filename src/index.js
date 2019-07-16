@@ -3,6 +3,7 @@
 const Program = require("commander");
 const NetworkCLI = require("./networkCLI");
 const Logger = require("./logger");
+const Conf = require("./conf");
 
 const tasks = {
     async createNetwork({
@@ -44,6 +45,70 @@ const tasks = {
 
         return cli;
     },
+    async installChaincode({
+        org,
+        peer,
+        channel = `${Conf.CHANNEL_PREFIX}0`,
+        name = "hfchaincode",
+        version = "1.0.0",
+        language = "node",
+        ctor = {},
+        policy = {},
+        path = null,
+        instantiate = false,
+    }) {
+        const cli = new NetworkCLI();
+
+        try {
+            cli.installChaincode({
+                org,
+                peer,
+                channel,
+                name,
+                version,
+                language,
+                ctor,
+                policy,
+                path,
+                instantiate,
+            });
+        } catch (e) {
+            Logger.error(`installChaincode: ${e}`);
+        }
+
+        return cli;
+    },
+    async upgradeChaincode({
+        org,
+        peer,
+        channel = `${Conf.CHANNEL_PREFIX}0`,
+        name = "hfchaincode",
+        version = "1.1.0",
+        language = "node",
+        ctor = {},
+        policy = {},
+        path = null,
+    }) {
+        const cli = new NetworkCLI();
+
+        try {
+            cli.upgradeChaincode({
+                org,
+                peer,
+                channel,
+                name,
+                version,
+                language,
+                ctor,
+                policy,
+                path,
+            });
+        } catch (e) {
+            Logger.error(`installChaincode: ${e}`);
+        }
+
+        return cli;
+    },
 };
 
 Program
@@ -81,6 +146,68 @@ Program
             });
         } else {
             await tasks.removeNetwork();
+        }
+    });
+
+
+Program
+    .command("installcc")
+    .option("-o, --organization <organization>", "Organization of installed chaincode")
+    .option("-p, --peer <peer>", "Peer of installed chaincode")
+    .option("-C, --channel <channel>", "Channel for installed chaincode")
+    .option("-n, --name <name>", "Name of the chaincode")
+    .option("-v, --version <version>", "Version of chaincode")
+    .option("-l, --language <language>", "Language the chaincode is written in (default 'golang')")
+    .option("-c, --ctor <ctor>", "Constructor message for the chaincode in JSON format (default '{}')")
+    .option("-y, --policy <policy>", "Chanincode policy")
+    .option("-P, --path <path>", "Path to deploy the network")
+    .option("-i, --instantiate", "Instantiate chaincode true or false")
+    .action(async (cmd) => {
+        if (cmd) {
+            await tasks.installChaincode({
+                org: cmd.organization,
+                peer: cmd.peer,
+                channel: cmd.channel,
+                name: cmd.name,
+                version: cmd.version,
+                language: cmd.language,
+                ctor: cmd.ctor,
+                policy: cmd.policy,
+                path: cmd.path,
+                instantiate: cmd.instantiate && true,
+            });
+        } else {
+            await tasks.installChaincode();
+        }
+    });
+
+
+Program
+    .command("upgradecc")
+    .option("-o, --organization <organization>", "Organization of installed chaincode")
+    .option("-p, --peer <peer>", "Peer of installed chaincode")
+    .option("-C, --channel <channel>", "Channel for installed chaincode")
+    .option("-n, --name <name>", "Name of the chaincode")
+    .option("-v, --version <version>", "Version of chaincode")
+    .option("-l, --language <language>", "Language the chaincode is written in (default 'golang')")
+    .option("-c, --ctor <ctor>", "Constructor message for the chaincode in JSON format (default '{}')")
+    .option("-y, --policy <policy>", "Chanincode policy")
+    .option("-P, --path <path>", "Path to deploy the network")
+    .action(async (cmd) => {
+        if (cmd) {
+            await tasks.upgradeChaincode({
+                org: cmd.organization,
+                peer: cmd.peer,
+                channel: cmd.channel,
+                name: cmd.name,
+                version: cmd.version,
+                language: cmd.language,
+                ctor: cmd.ctor,
+                policy: cmd.policy,
+                path: cmd.path,
+            });
+        } else {
+            await tasks.upgradeChaincode();
         }
     });
 

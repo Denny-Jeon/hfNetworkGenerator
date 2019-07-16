@@ -12,7 +12,7 @@ module.exports = class CreateConnectionYamlGenerator extends FileWrapper {
         // eslint-disable
         this.content = `---
 name: ${Conf.PROJECT_NAME}
-x-type: ${Conf.FABIRC_COMPOSER_XTYPE}
+${Conf.FABRIC_COMPOSER_XTYPE ? `x-type: ${Conf.FABRIC_COMPOSER_XTYPE}` : ""}
 version: 1.0.0
 client:
     organization: ${this.network.orgs[0]}
@@ -21,15 +21,15 @@ client:
             peer:
                 endorser: '300'
             orderer: '300'
-# channels:
+#channels:
 ${this.network.channels.map(ch => `
-# ${ch}:
-#     orderers:
-#         - orderer.${Conf.ORDERER_DOMAIN}
-#     peers:
+#    ${ch}:
+#        orderers:
+#            - orderer.${Conf.ORDERER_DOMAIN}
+#        peers:
          ${this.network.orgs.map(org => `
              ${this.network.peers.map(peer => `
-#         ${peer}.${org}.${Conf.DOMAIN}: {}
+#            ${peer}.${org}.${Conf.DOMAIN}: {}
              `).join("")}
          `).join("")}
 `).join("")}
@@ -37,7 +37,7 @@ ${this.network.channels.map(ch => `
 channels:
     ${this.network.channels[0]}:
         orderers:
-            - orderer.${Conf.ORDERER_DOMAIN}
+           - orderer.${Conf.ORDERER_DOMAIN}
         peers:
         ${this.network.orgs.map(org => `
             ${this.network.peers.map(peer => `
@@ -78,7 +78,7 @@ peers:
 certificateAuthorities:
     ${this.network.orgs.map(org => `
     ca.${org}.${Conf.DOMAIN}:
-        url: http://localhost:${this.network.ports[org].CA}
+        url: http://ca.${org}.${Conf.DOMAIN}:${this.network.ports[org].CA}
         caName: ca.${org}.${Conf.DOMAIN}
         httpOption:
             verify: false
@@ -133,6 +133,8 @@ fi
     }
 
     async executeAdminCard() {
-        await this.execute(`${this.params.path}/connections/${Conf.ORG_PREFIX}1_AdminCard.sh`);
+        if (Conf.FABRIC_COMPOSER_ENABLE === true) {
+            await this.execute(`${this.params.path}/connections/${Conf.ORG_PREFIX}1_AdminCard.sh`);
+        }
     }
 };

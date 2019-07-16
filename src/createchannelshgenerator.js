@@ -69,7 +69,7 @@ createChannel() {
     set +x
     cat log.txt
     fail "create channel ${CH} failed"
-    sleep $DELAY
+    # sleep $DELAY
     `).join("")}   
 }
 

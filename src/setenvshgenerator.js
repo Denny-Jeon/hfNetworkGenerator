@@ -2,9 +2,9 @@ const Logger = require("./logger");
 const Conf = require("./conf");
 const FileWrapper = require("./filewrapper");
 
-module.exports = class JoinChannelShGenerator extends FileWrapper {
+module.exports = class SetEnvShGenerator extends FileWrapper {
     constructor({ params, network }) {
-        super(params.path, "scripts/join-channels.sh");
+        super(params.path, "scripts/set-env.sh");
         this.params = params;
         this.network = network;
 
@@ -16,29 +16,12 @@ set +e
 export FABRIC_CLI_ROOT=/opt/gopath/src/github.com/hyperledger/fabric
 export ORDERER_CA=$FABRIC_CLI_ROOT/peer/crypto/ordererOrganizations/${Conf.ORDERER_DOMAIN}/orderers/orderer.${Conf.ORDERER_DOMAIN}/msp/tlscacerts/tlsca.${Conf.ORDERER_DOMAIN}-cert.pem
 export FABRIC_CFG_PATH=/etc/hyperledger/fabric
-
-export LANGUAGE=node
-export IMAGETAG="latest"
-export TIMEOUT=10
-export DELAY=3
-
-COUNTER=1
-MAX_RETRY=3
-
-function fail() {
-    if [ "$?" -ne 0 ]; then
-        echo $1
-        exit 1
-    fi
-}
-
+# 주의 반드시 디렉토리의 끝은 / 로 끝나야 할 것
+CC_SRC_PATH="/opt/gopath/src/github.com/chaincode/setcc/node/"
 
 setGlobals() {
     PEER=$1
     ORG=$2
-
-    echo $PEER
-    echo $ORG
 
     case $ORG in
         ${this.network.orgs.map(org => `
@@ -60,33 +43,7 @@ setGlobals() {
     esac
 }
 
-joinChannelWithRetry() {
-    PEER=$1
-    ORG=$2  
-    setGlobals $PEER $ORG
-
-    env | grep CORE
-
-    set -x
-    ${this.network.channels.map(CH => `
-    peer channel join -b ${CH}.block >&log.txt
-    res=$?
-    set +x
-    cat log.txt
-    if [ $res -ne 0 -a $COUNTER -lt $MAX_RETRY ]; then
-        COUNTER=$(expr $COUNTER + 1)
-        echo "$PEER.$ORG failed to join the channel, Retry after $DELAY seconds"
-        sleep $DELAY
-        joinChannelWithRetry $PEER $ORG
-    else
-        COUNTER=1
-    fi
-
-    fail "join channel ${CH} failed"
-    `).join("")}   
-}
-
-joinChannelWithRetry $1 $2
+setGlobals ${Conf.PEER_PREFIX}$1 ${Conf.ORG_PREFIX}$2
 `;
     }
 

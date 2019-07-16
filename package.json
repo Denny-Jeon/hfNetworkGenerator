@@ -9,6 +9,7 @@
     "start": "node src/index.js"
   },
   "dependencies": {
+    "app-root-path": "^2.2.1",
     "commander": "^2.20.0",
     "fs-extra": "^8.1.0",
     "js-yaml": "^3.13.1",

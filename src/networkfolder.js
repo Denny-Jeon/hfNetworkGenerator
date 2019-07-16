@@ -21,5 +21,6 @@ module.exports = class NetworkFolder extends FileWrapper {
         await this.createFolder(`${this.params.path}/scripts`);
         await this.createFolder(`${this.params.path}/connections`);
         await this.createFolder(`${this.params.path}/chaincode`);
+        await this.copyExampleChaincode();
     }
 };
