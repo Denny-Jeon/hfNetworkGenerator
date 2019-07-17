@@ -1,6 +1,6 @@
-const Logger = require("./logger");
-const Conf = require("./conf");
-const FileWrapper = require("./filewrapper");
+const Logger = require("../util/logger");
+const Conf = require("../conf");
+const FileWrapper = require("../util/filewrapper");
 
 module.exports = class CryptoShGenerator extends FileWrapper {
     constructor({ params, network }) {
@@ -13,7 +13,7 @@ module.exports = class CryptoShGenerator extends FileWrapper {
 #!/bin/bash
 set -e
 PROJECT_ROOT=${this.params.path}
-FABRIC_BIN=${Conf.FABRIC_BIN_ROOT}/bin
+FABRIC_BIN=${Conf.fabricBinRoot}/bin
 TARGET=$PROJECT_ROOT/crypto-config
 
 export FABRIC_CFG_PATH=$PROJECT_ROOT

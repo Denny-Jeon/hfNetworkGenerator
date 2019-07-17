@@ -1,6 +1,6 @@
-const Logger = require("./logger");
-const Conf = require("./conf");
-const FileWrapper = require("./filewrapper");
+const Logger = require("../util/logger");
+const Conf = require("../conf");
+const FileWrapper = require("../util/filewrapper");
 
 module.exports = class ConfigTxYaml extends FileWrapper {
     constructor({ params, network }) {
@@ -23,7 +23,7 @@ Organizations:
     - &OrdererOrg
         Name: OrdererOrg
         ID: OrdererMSP
-        MSPDir: crypto-config/ordererOrganizations/${Conf.ORDERER_DOMAIN}/msp
+        MSPDir: crypto-config/ordererOrganizations/${Conf.ordererDomain}/msp
         Policies:
             Readers:
                 Type: Signature
@@ -39,7 +39,7 @@ Organizations:
     - &${org}
         Name: ${org}MSP
         ID: ${org}MSP
-        MSPDir: crypto-config/peerOrganizations/${org}.${Conf.DOMAIN}/msp
+        MSPDir: crypto-config/peerOrganizations/${org}.${Conf.domain}/msp
         Policies:
             Readers:
                 Type: Signature
@@ -52,8 +52,8 @@ Organizations:
                 Rule: "OR('${org}MSP.admin')"
 
         AnchorPeers:
-            - Host: ${Conf.PEER_PREFIX}0.${org}.${Conf.DOMAIN}
-              Port: ${this.network.ports[org][`${Conf.PEER_PREFIX}0`].ADDRESS}
+            - Host: ${Conf.peerPrefix}0.${org}.${Conf.domain}
+              Port: ${this.network.ports[org][`${Conf.peerPrefix}0`].ADDRESS}
 
     `).join("")}
 
@@ -118,7 +118,7 @@ Application: &ApplicationDefaults
 Orderer: &OrdererDefaults
     OrdererType: solo
     Addresses:
-        - orderer.${Conf.ORDERER_DOMAIN}:7050
+        - orderer.${Conf.ordererDomain}:7050
     BatchTimeout: 2s
     BatchSize:
         MaxMessageCount: 10

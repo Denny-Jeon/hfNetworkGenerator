@@ -41,6 +41,7 @@ exit
 
 yarn start installcc -o 1 -p 0 -C 0 -n setcc -l node -v 2.0 -c '{"Args":["initLedger"]}' -y "AND ('org1MSP.peer')"
 yarn start installcc -o 1 -p 1 -C 0 -n setcc -l node -v 2.0 -c '{"Args":["initLedger"]}' -y "AND ('org1MSP.peer')"
+yarn start upgradecc -o 1 -p 0 -C 0 -n setcc -l node -v 2.0 -c '{"Args":["initLedger"]}' -y "AND ('org1MSP.peer')"
 yarn start upgradecc -o 1 -p 1 -C 0 -n setcc -l node -v 2.0 -c '{"Args":["initLedger"]}' -y "AND ('org1MSP.peer')"
 
 docker exec -it cli bash

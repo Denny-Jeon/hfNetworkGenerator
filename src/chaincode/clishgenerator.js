@@ -1,15 +1,15 @@
-const Logger = require("./logger");
-const Conf = require("./conf");
-const FileWrapper = require("./filewrapper");
+const Logger = require("../util/logger");
+const Conf = require("../conf");
+const FileWrapper = require("../util/filewrapper");
 
 module.exports = class ChaincodeCliShGenerator extends FileWrapper {
     constructor({ params }) {
         super(params.path, "chaincode-cli.sh");
         this.params = params;
 
-        this.org = `${Conf.ORG_PREFIX}${this.params.org}`;
-        this.peer = `${Conf.PEER_PREFIX}${this.params.peer}`;
-        this.channel = `${Conf.CHANNEL_PREFIX}${this.params.channel}`;
+        this.org = `${Conf.orgPrefix}${this.params.org}`;
+        this.peer = `${Conf.peerPrefix}${this.params.peer}`;
+        this.channel = `${Conf.channelPrefix}${this.params.channel}`;
         this.ctorstring = JSON.stringify(this.params.ctor);
         this.policystring = this.params.policy.replace(/'/g, "\\'")
             .replace(/"/g, "\\\"");

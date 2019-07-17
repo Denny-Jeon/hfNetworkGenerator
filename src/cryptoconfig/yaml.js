@@ -1,6 +1,6 @@
-const Logger = require("./logger");
-const Conf = require("./conf");
-const FileWrapper = require("./filewrapper");
+const Logger = require("../util/logger");
+const Conf = require("../conf");
+const FileWrapper = require("../util/filewrapper");
 
 module.exports = class CryptoConfigYaml extends FileWrapper {
     constructor({ params, network }) {
@@ -24,7 +24,7 @@ OrdererOrgs:
   # Orderer
   # ---------------------------------------------------------------------------
   - Name: Orderer
-    Domain: ${Conf.ORDERER_DOMAIN}
+    Domain: ${Conf.ordererDomain}
     # ---------------------------------------------------------------------------
     # "Specs" - See PeerOrgs below for complete description
     # ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ PeerOrgs:
   # ---------------------------------------------------------------------------
   ${this.network.orgs.map(org => `
   - Name: ${org}
-    Domain: ${org}.${Conf.DOMAIN}
+    Domain: ${org}.${Conf.domain}
     EnableNodeOUs: true
     # ---------------------------------------------------------------------------
     # "Specs"

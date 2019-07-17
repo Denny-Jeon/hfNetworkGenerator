@@ -52,4 +52,12 @@ module.exports = class FileWrapper {
     copyExampleChaincode(src = `${AppRootPath}/src/examples/`) {
         return FsExtra.copySync(src, `${this.path}/chaincode/`);
     }
+
+    async remove(filename = null) {
+        if (filename) {
+            await FsExtra.remove(filename);
+        } else {
+            await FsExtra.remove(this.filename);
+        }
+    }
 };

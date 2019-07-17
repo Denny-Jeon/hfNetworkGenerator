@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 const Program = require("commander");
-const NetworkCLI = require("./networkCLI");
-const Logger = require("./logger");
+const NetworkCLI = require("./network/cli");
+const Logger = require("./util/logger");
 const Conf = require("./conf");
 
 const tasks = {
     async createNetwork({
-        orgs = 2, peers = 2, users = 2, channels = 1, path = null, inside = false,
+        orgs = 1, peers = 2, users = 2, channels = 1, path = null, inside = false,
     }) {
         const cli = new NetworkCLI();
 
@@ -48,7 +48,7 @@ const tasks = {
     async installChaincode({
         org,
         peer,
-        channel = `${Conf.CHANNEL_PREFIX}0`,
+        channel = `${Conf.channelPrefix}0`,
         name = "hfchaincode",
         version = "1.0.0",
         language = "node",
@@ -81,7 +81,7 @@ const tasks = {
     async upgradeChaincode({
         org,
         peer,
-        channel = `${Conf.CHANNEL_PREFIX}0`,
+        channel = `${Conf.channelPrefix}0`,
         name = "hfchaincode",
         version = "1.1.0",
         language = "node",
@@ -122,7 +122,7 @@ Program
     .action(async (cmd) => {
         if (cmd) {
             await tasks.createNetwork({
-                orgs: (!cmd.organizations || (cmd.organizations <= 2) ? 2 : cmd.organizations),
+                orgs: (!cmd.organizations) ? 1 : cmd.organizations,
                 peers: (!cmd.peers || (cmd.peers <= 1) ? 1 : cmd.peers),
                 users: (!cmd.users || (cmd.users <= 1) ? 1 : cmd.users),
                 channels: (!cmd.channels || (cmd.channels <= 1) ? 1 : cmd.channels),

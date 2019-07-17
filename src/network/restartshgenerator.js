@@ -1,6 +1,6 @@
-const Logger = require("./logger");
-const Conf = require("./conf");
-const FileWrapper = require("./filewrapper");
+const Logger = require("../util/logger");
+const Conf = require("../conf");
+const FileWrapper = require("../util/filewrapper");
 
 module.exports = class NetworkRestartShGenerator extends FileWrapper {
     constructor({ params, network }) {
@@ -24,11 +24,11 @@ fi
 
 
 # start
-COMPOSER_PROJECT_NAME=${Conf.PROJECT_NETWORK_NAME}
-FABRIC_VERSION=${Conf.FABRIC_VERSION}
-THIRDPARTY_VERSION=${Conf.THIRDPARTY_VERSION}
+COMPOSER_PROJECT_NAME=${Conf.projectNetworkName}
+FABRIC_VERSION=${Conf.fabricVersion}
+THIRDPARTY_VERSION=${Conf.thirdPartyVersion}
 PROJECT_ROOT=${this.params.path}
-FABRIC_BIN=${Conf.FABRIC_BIN_ROOT}/bin
+FABRIC_BIN=${Conf.fabricBinRoot}/bin
 export FABRIC_CFG_PATH=$PROJECT_ROOT
 
 function fail() {
@@ -39,6 +39,16 @@ function fail() {
 }
 
 docker-compose -f ${this.params.path}/docker-compose.yaml up -d
+# docker-compose -f ${this.params.path}/compose/docker-compose-cli.yaml up -d
+# docker-compose -f ${this.params.path}/compose/docker-compose-orderer.yaml up -d
+${this.network.orgs.map((org, index) => `
+${index === 0 ? `# docker-compose -f ${this.params.path}/compose/docker-compose-${org}.yaml up -d`
+        : `# docker-compose -f ${this.params.path}/compose/docker-compose-${org}.yaml up -d`}
+
+`).join("")}
+
+
+
 `;
     }
 

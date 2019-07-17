@@ -1,6 +1,6 @@
-const Logger = require("./logger");
-const Conf = require("./conf");
-const FileWrapper = require("./filewrapper");
+const Logger = require("../util/logger");
+const Conf = require("../conf");
+const FileWrapper = require("../util/filewrapper");
 
 module.exports = class CreateCliShGenerator extends FileWrapper {
     constructor({ params, network }) {
@@ -14,7 +14,7 @@ module.exports = class CreateCliShGenerator extends FileWrapper {
 set +e
 
 # export FABRIC_CLI_ROOT=/opt/gopath/src/github.com/hyperledger/fabric
-# export ORDERER_CA=$FABRIC_CLI_ROOT/peer/crypto/ordererOrganizations/${Conf.ORDERER_DOMAIN}/orderers/orderer.${Conf.ORDERER_DOMAIN}/msp/tlscacerts/tlsca.${Conf.ORDERER_DOMAIN}-cert.pem
+# export ORDERER_CA=$FABRIC_CLI_ROOT/peer/crypto/ordererOrganizations/${Conf.ordererDomain}/orderers/orderer.${Conf.ordererDomain}/msp/tlscacerts/tlsca.${Conf.ordererDomain}-cert.pem
 # export FABRIC_CFG_PATH=/etc/hyperledger/fabric
 
 export LANGUAGE=node
@@ -42,12 +42,15 @@ sleep $DELAY
     `).join("")}
 `).join("")}
 
-${this.network.orgs.map(org => `
-docker exec --interactive cli /bin/bash -c 'scripts/update-anchor-peers.sh ${this.network.peers[0]} ${org}'
+${this.network.channels.map(ch => `
+    ${this.network.orgs.map(org => `
+
+    docker exec --interactive cli /bin/bash -c 'scripts/update-anchor-peers.sh ${this.network.peers[0]} ${org} ${ch}'
+
+    `).join("")}
 `).join("")}
 `;
     }
-
 
     // eslint-enable
     print() {

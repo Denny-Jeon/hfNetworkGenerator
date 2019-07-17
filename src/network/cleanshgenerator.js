@@ -1,6 +1,6 @@
-const Logger = require("./logger");
-const Conf = require("./conf");
-const FileWrapper = require("./filewrapper");
+const Logger = require("../util/logger");
+const Conf = require("../conf");
+const FileWrapper = require("../util/filewrapper");
 
 module.exports = class NetworkCleanShGenerator extends FileWrapper {
     constructor({ params, network }) {
@@ -14,10 +14,10 @@ module.exports = class NetworkCleanShGenerator extends FileWrapper {
 set +e
 
 # start
-FABRIC_VERSION=${Conf.FABRIC_VERSION}
-THIRDPARTY_VERSION=${Conf.THIRDPARTY_VERSION}
+FABRIC_VERSION=${Conf.fabricVersion}
+THIRDPARTY_VERSION=${Conf.thirdPartyVersion}
 PROJECT_ROOT=${this.params.path}
-FABRIC_BIN=${Conf.FABRIC_BIN_ROOT}/bin
+FABRIC_BIN=${Conf.fabricBinPath}/bin
 export FABRIC_CFG_PATH=$PROJECT_ROOT
 
 function fail() {
@@ -46,6 +46,8 @@ fi
 }
 
 docker-compose -f ${this.params.path}/docker-compose.yaml down --volumes --remove-orphans
+# docker-compose -f ${this.params.path}/compose/docker-compose-cli.yaml down --volumes --remove-orphans
+# docker-compose -f ${this.params.path}/compose/docker-compose-orderer.yaml down --volumes --remove-orphans
 docker ps -a
 
 clearContainers
