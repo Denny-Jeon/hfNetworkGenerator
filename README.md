@@ -1,11 +1,25 @@
+[//]: # (SPDX-License-Identifier: MIT)
+
+## Hyperledger Fabric Network Generator
+
+Please visit the [installation instructions](http://hyperledger-fabric.readthedocs.io/en/latest/install.html)
+to ensure you have the correct prerequisites installed. Please use the
+version of the documentation that matches the version of the software you
+
 # hfNetworkGenerator
 hyperledger fabric network generator
 
-docker-compose version 1.24.0
+docker-compose version 1.24.0 install
+sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-composer --version
 
 
 download fabric 1.4.1
 git clone https://github.com/hyperledger/fabric-samples/tree/v1.4.1
+
+
+npm install -g yarn
 
 
 modify

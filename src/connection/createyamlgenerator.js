@@ -78,7 +78,7 @@ peers:
 certificateAuthorities:
     ${this.network.orgs.map(org => `
     ca.${org}.${Conf.domain}:
-        url: http://ca.${org}.${Conf.domain}:${this.network.ports[org].CA}
+        url: http://localhost:${this.network.ports[org].CA}
         caName: ca.${org}.${Conf.domain}
         httpOption:
             verify: false
