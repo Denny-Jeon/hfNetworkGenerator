@@ -9,7 +9,7 @@ git clone https://github.com/hyperledger/fabric-samples/tree/v1.4.1
 
 
 modify
-conf.js
+env/network.env
 
 
 yarn --ignore-engines
