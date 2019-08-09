@@ -157,6 +157,9 @@ module.exports = class NetworkCLI {
                 : join(Os.homedir(), Conf.projectRoot);
 
             // create network-restart
+            this.network = {
+                orgs: [],
+            };
             const networkCleanShGenerator = new NetworkCleanShGenerator({ params: this.params, network: this.network });
             await networkCleanShGenerator.execute();
 

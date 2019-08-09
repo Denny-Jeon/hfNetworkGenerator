@@ -14,13 +14,40 @@ module.exports = class NetworkRestartShGenerator extends FileWrapper {
 set +e
 
 # clean
-ITEMS=$(docker ps -a | awk '$2~/hyperledger/ {print $1}') 
+# ITEMS=$(docker ps -a | awk '$2~/hyperledger/ {print $1}') 
 
-if [ ! -z "$ITEMS" ]; then
-    docker stop $(docker ps -a | awk '$2~/hyperledger/ {print $1}') 
-    docker rm -f $(docker ps -a | awk '$2~/hyperledger/ {print $1}') $(docker ps -a | awk '{ print $1,$2 }' | grep dev-peer | awk '{print $1 }') || true
-    docker rmi -f $(docker images | grep dev-peer | awk '{print $3}') || true
-fi
+# if [ ! -z "$ITEMS" ]; then
+#    docker stop $(docker ps -a | awk '$2~/hyperledger/ {print $1}') 
+#    docker rm -f $(docker ps -a | awk '$2~/hyperledger/ {print $1}') $(docker ps -a | awk '{ print $1,$2 }' | grep dev-peer | awk '{print $1 }') || true
+#    docker rmi -f $(docker images | grep dev-peer | awk '{print $3}') || true
+# fi
+
+
+function clearContainers() {
+    ${this.network.orgs.map(org => `
+    CONTAINER_IDS=$(docker ps -a | awk '($2 ~ /dev-peer*.${org}.${Conf.domain}/) {print $1}')
+    if [ -z "$CONTAINER_IDS" -o "$CONTAINER_IDS" == " " ]; then
+      echo "---- No containers available for deletion ----"
+    else
+      docker rm -f $CONTAINER_IDS
+    fi
+    `).join("")}
+}
+
+function removeUnwantedImages() {
+    ${this.network.orgs.map(org => `
+    DOCKER_IMAGE_IDS=$(docker images | awk '($1 ~ /dev-peer*.${org}.${Conf.domain}/) {print $3}')
+    if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
+        echo "---- No images available for deletion ----"
+    else
+        docker rmi -f $DOCKER_IMAGE_IDS
+    fi
+    `).join("")}
+}
+
+
+clearContainers
+removeUnwantedImages
 
 
 # start
@@ -51,7 +78,6 @@ ${index === 0 ? `# docker-compose -f ${this.params.path}/compose/docker-compose-
 
 `;
     }
-
 
     // eslint-enable
     print() {

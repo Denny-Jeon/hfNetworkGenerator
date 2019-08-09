@@ -31,13 +31,13 @@ function fail() {
 
 # execute create channel by cli
 # inside docker directory 
-docker exec --interactive cli /bin/bash -c 'scripts/create-channels.sh'
+docker exec --interactive cli-${Conf.projectNetworkName} /bin/bash -c 'scripts/create-channels.sh'
 
 sleep $TIMEOUT
 
 ${this.network.orgs.map(org => `
     ${this.network.peers.map(peer => `
-docker exec --interactive cli /bin/bash -c 'scripts/join-channels.sh ${peer} ${org}'
+docker exec --interactive cli-${Conf.projectNetworkName} /bin/bash -c 'scripts/join-channels.sh ${peer} ${org}'
 sleep $DELAY
     `).join("")}
 `).join("")}
@@ -45,7 +45,7 @@ sleep $DELAY
 ${this.network.channels.map(ch => `
     ${this.network.orgs.map(org => `
 
-    docker exec --interactive cli /bin/bash -c 'scripts/update-anchor-peers.sh ${this.network.peers[0]} ${org} ${ch}'
+    docker exec --interactive cli-${Conf.projectNetworkName} /bin/bash -c 'scripts/update-anchor-peers.sh ${this.network.peers[0]} ${org} ${ch}'
 
     `).join("")}
 `).join("")}

@@ -99,7 +99,7 @@ version: '3.5'
 volumes:
   ca.${org}.${Conf.domain}:
   ${this.network.peers.map(peer => `
-  # couchdb-${peer}.${org}:
+  # couchdb-${peer}.${org}.${Conf.domain}:
   ${peer}.${org}.${Conf.domain}:
   `).join("")}
 
@@ -127,8 +127,8 @@ services:
       - hfn
 
   ${this.network.peers.map(peer => `
-  couchdb-${peer}.${org}:
-    container_name: couchdb-${peer}.${org}
+  couchdb-${peer}.${org}.${Conf.domain}:
+    container_name: couchdb-${peer}.${org}.${Conf.domain}
     image: hyperledger/fabric-couchdb
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
@@ -174,7 +174,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peer}.${org}.${Conf.domain}:${this.network.ports[org][peer].ADDRESS}
       - CORE_PEER_LOCALMSPID=${org}MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-${peer}.${org}:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-${peer}.${org}.${Conf.domain}:5984
       # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
       # provide the credentials for ledger to connect to CouchDB.  The username and password must
       # match the username and password set for the associated CouchDB.
@@ -190,7 +190,7 @@ services:
     ports:
       - ${this.network.ports[org][peer].ADDRESS}:${this.network.ports[org][peer].ADDRESS}
     depends_on:
-      - couchdb-${peer}.${org}
+      - couchdb-${peer}.${org}.${Conf.domain}
     networks:
       - hfn
     `).join("")}     
@@ -211,8 +211,8 @@ networks:
     name: ${Conf.projectNetworkName}_hfn
 
 services:
-  cli:
-    container_name: cli
+  cli-${Conf.projectNetworkName}:
+    container_name: cli-${Conf.projectNetworkName}
     image: hyperledger/fabric-tools:${Conf.fabricVersion}
     tty: true
     stdin_open: true
@@ -221,7 +221,7 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=DEBUG
       - FABRIC_LOGGING_SPEC=INFO
-      - CORE_PEER_ID=cli
+      - CORE_PEER_ID=cli-${Conf.projectNetworkName}
       - CORE_PEER_ADDRESS=peer0.${Conf.orgPrefix}1.${Conf.domain}:${this.network.ports[`${Conf.orgPrefix}1`].peer0.ADDRESS}
       - CORE_PEER_LOCALMSPID=${Conf.orgPrefix}1MSP
       - CORE_PEER_TLS_ENABLED=true
@@ -256,7 +256,7 @@ volumes:
   `).join("")}
   ${this.network.orgs.map(org => `
   ${this.network.peers.map(peer => `
-  # couchdb-${peer}.${org}:
+  # couchdb-${peer}.${org}.${Conf.domain}:
   ${peer}.${org}.${Conf.domain}:
   `).join("")}
   `).join("")}
@@ -321,8 +321,8 @@ services:
 
   ${this.network.orgs.map(org => `
   ${this.network.peers.map(peer => `
-  couchdb-${peer}.${org}:
-    container_name: couchdb-${peer}.${org}
+  couchdb-${peer}.${org}.${Conf.domain}:
+    container_name: couchdb-${peer}.${org}.${Conf.domain}
     image: hyperledger/fabric-couchdb
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
@@ -368,7 +368,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peer}.${org}.${Conf.domain}:${this.network.ports[org][peer].ADDRESS}
       - CORE_PEER_LOCALMSPID=${org}MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-${peer}.${org}:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-${peer}.${org}.${Conf.domain}:5984
       # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
       # provide the credentials for ledger to connect to CouchDB.  The username and password must
       # match the username and password set for the associated CouchDB.
@@ -384,14 +384,14 @@ services:
     ports:
       - ${this.network.ports[org][peer].ADDRESS}:${this.network.ports[org][peer].ADDRESS}
     depends_on:
-      - couchdb-${peer}.${org}
+      - couchdb-${peer}.${org}.${Conf.domain}
     networks:
       - hfn
     `).join("")}
     `).join("")}
 
-  cli:
-    container_name: cli
+  cli-${Conf.projectNetworkName}:
+    container_name: cli-${Conf.projectNetworkName}
     image: hyperledger/fabric-tools:${Conf.fabricVersion}
     tty: true
     stdin_open: true
@@ -400,7 +400,7 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=DEBUG
       - FABRIC_LOGGING_SPEC=INFO
-      - CORE_PEER_ID=cli
+      - CORE_PEER_ID=cli-${Conf.projectNetworkName}
       - CORE_PEER_ADDRESS=peer0.${Conf.orgPrefix}1.${Conf.domain}:${this.network.ports[`${Conf.orgPrefix}1`].peer0.ADDRESS}
       - CORE_PEER_LOCALMSPID=${Conf.orgPrefix}1MSP
       - CORE_PEER_TLS_ENABLED=true

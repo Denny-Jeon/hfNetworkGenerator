@@ -25,7 +25,7 @@ function fail() {
     fi
 }
 
-docker exec --interactive cli /bin/bash -c 'scripts/${this.params.mode}-chaincode.sh ${this.peer} ${this.org} ${this.params.name} ${this.params.version} ${this.params.language} ${this.channel} ${this.ctorstring} "" ${this.params.instantiate}'
+docker exec --interactive cli-${Conf.projectNetworkName} /bin/bash -c 'scripts/${this.params.mode}-chaincode.sh ${this.peer} ${this.org} ${this.params.name} ${this.params.version} ${this.params.language} ${this.channel} ${this.ctorstring} "" ${this.params.instantiate}'
 `;
     }
 
