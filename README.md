@@ -100,7 +100,7 @@ composer-rest-server -c admin@sodas-medical -n never
 # network clean
 cd <project name>/hfNetworkGenerator
 yarn start clean
-
+ 
 
 # couchdb 접속
 http://localhost:7053/_utils/
