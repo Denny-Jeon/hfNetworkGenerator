@@ -131,3 +131,14 @@ yarn start clean
 ```
 http://localhost:7053/_utils/
 ```
+
+
+# ISSUE composer-rest-server
+```
+reference: https://stackoverflow.com/questions/69692528/generating-a-rest-server-from-hyperledger-fabric-composer
+
+$ npm i -g composer-rest-server
+$ cd /home/<account>/.nvm/versions/node/v8.17.0/lib/node_modules/composer-rest-server
+$ npm install swagger-client@3.9.0 
+$ rm -rf node_modules/g11n-pipeline/node_modules/swagger-client
+```
