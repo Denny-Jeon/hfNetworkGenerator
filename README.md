@@ -24,11 +24,13 @@ cd <project name>
 curl -sSL https://bit.ly/2ysbOFE | bash -s -- 1.4.1
 
 # download and hyperledger-composer install (node version = 8)
-npm install -g composer-cli@0.20.0
+```
+ npm install -g composer-cli@0.20.0
 npm install -g composer-rest-server@0.20.0
 npm install -g generator-hyperledger-composer@0.20.0
 npm install -g yo
 npm install -g composer-playground@0.20.0
+ ```
 
 
 # clone hfNetworkGenerator
